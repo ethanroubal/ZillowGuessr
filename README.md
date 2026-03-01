@@ -7,15 +7,23 @@ A GeoGuessr-style home game with two modes:
 
 Both modes run for 20 rounds with up to 1,000 points per round.
 
-## Free public Zillow data behavior
+## Why live Zillow fetches get blocked (403)
 
-No paid API is required. The server uses a three-step free pipeline:
+The `403` is from Zillow anti-bot protections (WAF/bot mitigation). A server script without a full browser session, stable cookies, JS execution fingerprints, and trusted traffic profile is often denied. In short: the request is reaching Zillow, but access is rejected before content is returned.
 
-1. **Live public fetch** of Zillow listing pages + JSON-LD parsing for active listings only (`source: public_live`).
-2. If live fetch is blocked, use a **cached active Zillow snapshot set** (`source: public_snapshot`).
-3. Only if needed, use minimal **generic fallback** (`source: fallback`).
+## Current remediation strategy in this app
 
-This reduces reliance on generic fallback and keeps gameplay tied to Zillow listing metadata.
+1. Try live public listing fetch + JSON-LD parsing, but only accept entries that look active/for-sale (`source: public_live`).
+2. If blocked, use an **active snapshot set** whose address is derived from the Zillow detail URL and coordinates are geocoded so address/link/marker remain consistent (`source: public_snapshot`).
+3. If no active listings are available, return `503` rather than serving non-active/off-market data.
+
+This guarantees we do not intentionally serve off-market listings in fallback behavior.
+
+## Address/link/image consistency fixes
+
+- Address displayed in the game is now derived from the listing source and aligned to the detail URL.
+- Map marker coordinates for snapshot entries are geocoded from that same address.
+- Listing images are served through `/api/image` proxy with direct-image fallback in the client to mitigate hotlink blocking.
 
 ## Run locally
 
@@ -37,6 +45,3 @@ Then open `http://localhost:4173`.
 ## Browser testing note
 
 If Chromium crashes with SIGSEGV in your environment, use Firefox for Playwright smoke tests.
-
-
-- Listing images are served through a local `/api/image` proxy to avoid hotlink blocking issues.
