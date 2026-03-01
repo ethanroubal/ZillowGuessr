@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZillowGuessr</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>ZillowGuessr</h1>
+      <p>Guess house prices from map clues. 20 rounds. 20,000 max points.</p>
+    </header>
+
+    <main>
+      <section id="auth-card" class="card">
+        <h2>Account</h2>
+        <p>Create a quick profile to track your scores on the leaderboard.</p>
+        <form id="auth-form" class="inline-form">
+          <label for="username">Username</label>
+          <input id="username" name="username" required maxlength="20" />
+          <button type="submit">Sign In / Create</button>
+        </form>
+        <p id="auth-status" class="status"></p>
+      </section>
+
+      <section id="game-card" class="card hidden">
+        <div class="game-header">
+          <div>
+            <h2 id="welcome"></h2>
+            <p id="round-label">Round 1 / 20</p>
+          </div>
+          <div class="score-box">
+            <span>Total Score</span>
+            <strong id="total-score">0</strong>
+          </div>
+        </div>
+
+        <article class="listing">
+          <img id="house-image" alt="House listing" />
+          <div class="listing-details">
+            <h3 id="listing-address"></h3>
+            <p id="listing-meta"></p>
+          </div>
+        </article>
+
+        <div id="map"></div>
+        <p class="small-note">
+          The home is somewhere inside the highlighted circle, but not at the exact center.
+        </p>
+
+        <form id="guess-form" class="inline-form">
+          <label for="price-guess">Your Price Guess ($)</label>
+          <input
+            id="price-guess"
+            name="priceGuess"
+            type="number"
+            min="10000"
+            step="1000"
+            required
+          />
+          <button type="submit">Submit Guess</button>
+        </form>
+
+        <div id="round-result" class="result"></div>
+        <button id="next-round" class="hidden">Next Round</button>
+      </section>
+
+      <section id="leaderboard-card" class="card">
+        <div class="leaderboard-head">
+          <h2>Leaderboard</h2>
+          <button id="clear-leaderboard" class="ghost">Clear</button>
+        </div>
+        <ol id="leaderboard-list"></ol>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="script.js"></script>
+  </body>
+</html>
