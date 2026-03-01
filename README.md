@@ -34,3 +34,13 @@ Then open `http://localhost:4173`.
 
 - **<= 1% error**: 1000 points (perfect)
 - For larger errors, score follows a quadratic decay based on relative error, giving more intuitive differentiation for near misses while reducing points for broad misses.
+
+
+## Testing and SIGSEGV fix
+
+If browser-based smoke tests crash with a Chromium `SIGSEGV` in this environment, use Firefox for Playwright runs instead of Chromium. This is an environment/runtime issue with headless Chromium, not a game-logic crash.
+
+Example Playwright engine choice:
+
+- ✅ Use `p.firefox.launch()` for smoke screenshots/tests.
+- ⚠️ Avoid `p.chromium.launch()` in this container when it is unstable.
