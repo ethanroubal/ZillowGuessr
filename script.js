@@ -1,7 +1,7 @@
 const TOTAL_ROUNDS = 20;
-const MAP_RADIUS_METERS = 5500;
-const MIN_CENTER_OFFSET_METERS = 1200;
-const MAX_CENTER_OFFSET_METERS = 3800;
+const MAP_RADIUS_METERS = 5200;
+const MIN_CENTER_OFFSET_METERS = 900;
+const MAX_CENTER_OFFSET_METERS = 3600;
 
 const leaderboardKey = 'zillowguessr_leaderboard';
 const usersKey = 'zillowguessr_users';
@@ -66,14 +66,19 @@ function initializeMap() {
   }).addTo(map);
 }
 
+// Better-feeling score curve:
+// - <=1% error: perfect 1000
+// - then smooth quadratic decay based on percentage miss, to 0 by 100% error.
 function calculateRoundPoints(guess, actual) {
   const errorPercent = Math.abs(guess - actual) / actual;
   if (errorPercent <= 0.01) {
     return { points: 1000, errorPercent };
   }
 
-  const adjusted = Math.max(0, 1 - (errorPercent - 0.01) / 0.49);
-  return { points: Math.round(1000 * adjusted), errorPercent };
+  const boundedError = Math.min(errorPercent, 1);
+  const base = 1 - boundedError;
+  const points = Math.max(0, Math.round(1000 * base * base));
+  return { points, errorPercent };
 }
 
 function loadUsers() {
@@ -115,7 +120,7 @@ function refreshLeaderboard() {
 async function fetchRandomListing() {
   const response = await fetch('/api/listings/random');
   if (!response.ok) {
-    throw new Error('Unable to fetch listing from API');
+    throw new Error('Unable to fetch listing from server');
   }
 
   const payload = await response.json();
@@ -128,7 +133,7 @@ async function fetchRandomListing() {
 
 async function showRound() {
   roundLabel.textContent = `Round ${gameState.roundIndex + 1} / ${TOTAL_ROUNDS}`;
-  roundResult.textContent = 'Loading Zillow listing...';
+  roundResult.textContent = 'Loading a home listing...';
   guessForm.classList.add('hidden');
   nextRoundBtn.classList.add('hidden');
 
@@ -142,7 +147,7 @@ async function showRound() {
     houseImage.src = round.image;
     houseImage.alt = `Listing at ${round.address}`;
     listingAddress.textContent = round.address;
-    listingMeta.innerHTML = `${round.beds} bd • ${round.baths} ba • ${Number(round.sqft).toLocaleString()} sqft • ${round.cityState}<br/><a href="${round.detailUrl}" target="_blank" rel="noreferrer">View Zillow listing</a> · Source: <strong>${payload.source}</strong>`;
+    listingMeta.innerHTML = `${round.beds || '?'} bd • ${round.baths || '?'} ba • ${Number(round.sqft || 0).toLocaleString()} sqft • ${round.cityState}<br/><a href="${round.detailUrl}" target="_blank" rel="noreferrer">View listing details</a> · Source: <strong>${payload.source}</strong>`;
 
     if (mapCircle) {
       map.removeLayer(mapCircle);
@@ -154,17 +159,17 @@ async function showRound() {
 
     mapCircle = L.circle([center.lat, center.lng], {
       radius: MAP_RADIUS_METERS,
-      color: '#2d6cdf',
-      fillColor: '#2d6cdf',
-      fillOpacity: 0.25
+      color: '#0f7a42',
+      fillColor: '#25a85d',
+      fillOpacity: 0.26
     }).addTo(map);
 
-    map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
+    map.fitBounds(mapCircle.getBounds(), { padding: [24, 24] });
 
     totalScoreEl.textContent = gameState.totalScore;
     roundResult.innerHTML = payload.warning
-      ? `Loaded fallback listing. API warning: ${payload.warning}`
-      : 'Submit your guess!';
+      ? `Loaded fallback listing. Note: ${payload.warning}`
+      : payload.note || 'Submit your best guess.';
     guessForm.reset();
     guessForm.classList.remove('hidden');
   } catch (error) {

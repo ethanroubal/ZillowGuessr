@@ -1,27 +1,26 @@
 # ZillowGuessr
 
-A GeoGuessr-style Zillow price game:
+A GeoGuessr-style home price game with a green money + real-estate visual theme.
 
-- Each round fetches a **random Zillow listing** from an API-backed endpoint.
-- The player sees listing photos/details and a map circle where the house is inside but not centered.
-- The player guesses the price, earning up to **1000 points** if within **1%**.
+- Each round fetches a random listing candidate from the server.
+- The player sees listing images/details and a map circle where the house is inside but not centered.
+- The player guesses the listing price, earning up to **1000 points** if within **1%**.
 - The game runs for **20 rounds** (max **20,000** points).
 - Usernames + leaderboard are stored locally in browser `localStorage`.
 
-## API integration
+## Can this work without paying for an API?
 
-This app uses a server-side proxy endpoint (`/api/listings/random`) so API keys are not exposed in the browser.
+Yes. This implementation defaults to a **free mode** that attempts to fetch data from public Zillow listing pages server-side and parse their metadata.
 
-Set environment variables before starting:
+- No paid API key is required for this mode.
+- It is more brittle than an official paid API (page markup may change).
+- If parsing fails, the app automatically falls back to local sample listings so gameplay continues.
+
+You can disable free mode with:
 
 ```bash
-export ZILLOW_RAPIDAPI_KEY="your_rapidapi_key"
-# optional overrides
-export ZILLOW_RAPIDAPI_HOST="zillow56.p.rapidapi.com"
-export ZILLOW_SEARCH_ENDPOINT="https://zillow56.p.rapidapi.com/search"
+export ZILLOW_FREE_MODE=false
 ```
-
-If no key is configured (or Zillow API fails), the app returns fallback sample listings so the game still works.
 
 ## Run locally
 
@@ -30,3 +29,8 @@ node server.js
 ```
 
 Then open `http://localhost:4173`.
+
+## Scoring model
+
+- **<= 1% error**: 1000 points (perfect)
+- For larger errors, score follows a quadratic decay based on relative error, giving more intuitive differentiation for near misses while reducing points for broad misses.
