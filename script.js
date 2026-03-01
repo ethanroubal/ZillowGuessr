@@ -9,11 +9,11 @@ const usersKey = 'zillowguessr_users';
 const GAME_MODES = {
   price: {
     name: 'Price Mode',
-    description: 'Use the map circle clue and guess the listing price.'
+    description: 'Guess listing price from map clue.'
   },
   location: {
     name: 'Location Mode',
-    description: 'Use listing image + price and click where the house is on the map.'
+    description: 'Guess map location from photos + price.'
   }
 };
 
@@ -51,6 +51,11 @@ function toCurrency(value) {
     currency: 'USD',
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function toProxyImageUrl(url) {
+  if (!url) return '';
+  return `/api/image?url=${encodeURIComponent(url)}`;
 }
 
 function metersToLatLngOffset(lat, distanceMeters, bearingRadians) {
@@ -223,13 +228,11 @@ function setupModeUI() {
   if (gameState.mode === 'price') {
     guessForm.classList.remove('hidden');
     locationControls.classList.add('hidden');
-    modeInstructions.textContent =
-      'Price Mode: the home is inside the highlighted circle (not centered). Guess the price.';
+    modeInstructions.textContent = 'Price Mode: guess price from the circle clue.';
   } else {
     guessForm.classList.add('hidden');
     locationControls.classList.remove('hidden');
-    modeInstructions.textContent =
-      'Location Mode: you can see listing image + price. Click map to drop your guessed location.';
+    modeInstructions.textContent = 'Location Mode: click where you think the house is.';
   }
 }
 
@@ -248,11 +251,22 @@ async function showRound() {
     const round = payload.listing;
     gameState.currentRound = round;
 
-    houseImage.src = round.image;
+    const proxyUrl = toProxyImageUrl(round.image);
     houseImage.alt = `Listing at ${round.address}`;
+    houseImage.onerror = () => {
+      if (houseImage.dataset.fallbackTried !== '1') {
+        houseImage.dataset.fallbackTried = '1';
+        houseImage.src = round.image;
+        return;
+      }
+      houseImage.src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700"><rect width="100%" height="100%" fill="%23e7f4e5"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%230f6e3c" font-size="36" font-family="Arial">Listing image unavailable</text></svg>');
+    };
+    houseImage.dataset.fallbackTried = '0';
+    houseImage.src = proxyUrl;
+
+    listingAddress.textContent = round.address;
 
     if (gameState.mode === 'price') {
-      listingAddress.textContent = round.address;
       listingMeta.innerHTML = `${round.beds || '?'} bd • ${round.baths || '?'} ba • ${Number(round.sqft || 0).toLocaleString()} sqft • ${round.cityState}<br/><a href="${round.detailUrl}" target="_blank" rel="noreferrer">View listing details</a> · Source: <strong>${payload.source}</strong>`;
 
       const center = getRandomizedCircleCenter(round.lat, round.lng);
@@ -264,14 +278,13 @@ async function showRound() {
       }).addTo(map);
       map.fitBounds(mapCircle.getBounds(), { padding: [24, 24] });
     } else {
-      listingAddress.textContent = 'Guess this listing location';
-      listingMeta.innerHTML = `Price: <strong>${toCurrency(round.price)}</strong> • ${round.beds || '?'} bd • ${round.baths || '?'} ba<br/><a href="${round.detailUrl}" target="_blank" rel="noreferrer">View listing details</a> · Source: <strong>${payload.source}</strong>`;
+      listingMeta.innerHTML = `Price: <strong>${toCurrency(round.price)}</strong> • ${round.beds || '?'} bd • ${round.baths || '?'} ba • ${round.cityState}<br/><a href="${round.detailUrl}" target="_blank" rel="noreferrer">View listing details</a> · Source: <strong>${payload.source}</strong>`;
       map.setView([39.5, -98.35], 4);
     }
 
     totalScoreEl.textContent = gameState.totalScore;
     roundResult.innerHTML = payload.warning
-      ? `Loaded fallback listing. Note: ${payload.warning}`
+      ? `${payload.note || 'Loaded with warning.'} (${payload.warning})`
       : payload.note || 'Submit your best guess.';
     guessForm.reset();
   } catch (error) {
@@ -373,7 +386,7 @@ function submitLocationGuess() {
   }
 
   roundResult.innerHTML = [
-    `Actual Location: <strong>${round.cityState}</strong>`,
+    `Actual Location: <strong>${round.address}, ${round.cityState}</strong>`,
     `Distance error: <strong>${(distanceMeters / 1000).toFixed(1)} km</strong>`,
     `Points this round: <strong>${points}</strong>`
   ].join('<br/>');

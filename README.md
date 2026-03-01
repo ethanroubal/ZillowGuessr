@@ -11,8 +11,8 @@ Both modes run for 20 rounds with up to 1,000 points per round.
 
 No paid API is required. The server uses a three-step free pipeline:
 
-1. **Live public fetch** of Zillow listing pages + JSON-LD parsing (`source: public_live`).
-2. If live fetch is blocked, use a **cached public Zillow snapshot set** (`source: public_snapshot`).
+1. **Live public fetch** of Zillow listing pages + JSON-LD parsing for active listings only (`source: public_live`).
+2. If live fetch is blocked, use a **cached active Zillow snapshot set** (`source: public_snapshot`).
 3. Only if needed, use minimal **generic fallback** (`source: fallback`).
 
 This reduces reliance on generic fallback and keeps gameplay tied to Zillow listing metadata.
@@ -37,3 +37,6 @@ Then open `http://localhost:4173`.
 ## Browser testing note
 
 If Chromium crashes with SIGSEGV in your environment, use Firefox for Playwright smoke tests.
+
+
+- Listing images are served through a local `/api/image` proxy to avoid hotlink blocking issues.
