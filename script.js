@@ -149,7 +149,21 @@ function calculateLocationPoints(distanceMeters) {
 
 function setMode(mode) {
   selectedMode = mode;
-  for (const button of modeButtons) {
+  
+function switchGameMode(mode) {
+  setMode(mode);
+  if (!gameState) {
+    return;
+  }
+  if (gameState.mode === mode) {
+    return;
+  }
+  const username = gameState.username;
+  startGame(username, mode);
+  roundResult.textContent = `Switched to ${GAME_MODES[mode].name}. New run started.`;
+}
+
+for (const button of modeButtons) {
     button.classList.toggle('active', button.dataset.mode === mode);
   }
   for (const button of inGameModeButtons) {
@@ -399,8 +413,22 @@ function submitLocationGuess() {
   nextRoundBtn.classList.remove('hidden');
 }
 
+
+function switchGameMode(mode) {
+  setMode(mode);
+  if (!gameState) {
+    return;
+  }
+  if (gameState.mode === mode) {
+    return;
+  }
+  const username = gameState.username;
+  startGame(username, mode);
+  roundResult.textContent = `Switched to ${GAME_MODES[mode].name}. New run started.`;
+}
+
 for (const button of modeButtons) {
-  button.addEventListener('click', () => setMode(button.dataset.mode));
+  button.addEventListener('click', () => switchGameMode(button.dataset.mode));
 }
 
 authForm.addEventListener('submit', (event) => {
@@ -425,15 +453,7 @@ guessForm.addEventListener('submit', (event) => {
 submitLocationGuessBtn.addEventListener('click', submitLocationGuess);
 
 for (const button of inGameModeButtons) {
-  button.addEventListener('click', () => {
-    const mode = button.dataset.mode;
-    setMode(mode);
-    if (!gameState || gameState.mode === mode) {
-      return;
-    }
-    startGame(gameState.username, mode);
-    roundResult.textContent = `Switched to ${GAME_MODES[mode].name}. New run started.`;
-  });
+  button.addEventListener('click', () => switchGameMode(button.dataset.mode));
 }
 
 nextRoundBtn.addEventListener('click', () => {
