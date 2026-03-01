@@ -3,119 +3,6 @@ const MAP_RADIUS_METERS = 5500;
 const MIN_CENTER_OFFSET_METERS = 1200;
 const MAX_CENTER_OFFSET_METERS = 3800;
 
-const listingPool = [
-  {
-    address: '1452 Maple Ave, Austin, TX',
-    cityState: 'Austin, TX',
-    beds: 4,
-    baths: 3,
-    sqft: 2370,
-    price: 645000,
-    lat: 30.2883,
-    lng: -97.7445,
-    image: 'https://picsum.photos/seed/home1/900/500'
-  },
-  {
-    address: '221 Harbor View Dr, Seattle, WA',
-    cityState: 'Seattle, WA',
-    beds: 3,
-    baths: 2,
-    sqft: 1820,
-    price: 875000,
-    lat: 47.6203,
-    lng: -122.3493,
-    image: 'https://picsum.photos/seed/home2/900/500'
-  },
-  {
-    address: '89 Juniper Ln, Denver, CO',
-    cityState: 'Denver, CO',
-    beds: 5,
-    baths: 4,
-    sqft: 3010,
-    price: 990000,
-    lat: 39.7394,
-    lng: -104.9848,
-    image: 'https://picsum.photos/seed/home3/900/500'
-  },
-  {
-    address: '472 Oak Hollow Rd, Nashville, TN',
-    cityState: 'Nashville, TN',
-    beds: 3,
-    baths: 2,
-    sqft: 1680,
-    price: 510000,
-    lat: 36.1638,
-    lng: -86.7846,
-    image: 'https://picsum.photos/seed/home4/900/500'
-  },
-  {
-    address: '16 Shoreline Ct, Miami, FL',
-    cityState: 'Miami, FL',
-    beds: 4,
-    baths: 3,
-    sqft: 2490,
-    price: 1225000,
-    lat: 25.7733,
-    lng: -80.1907,
-    image: 'https://picsum.photos/seed/home5/900/500'
-  },
-  {
-    address: '3302 Elm Ridge St, Phoenix, AZ',
-    cityState: 'Phoenix, AZ',
-    beds: 4,
-    baths: 2,
-    sqft: 2140,
-    price: 560000,
-    lat: 33.4502,
-    lng: -112.0746,
-    image: 'https://picsum.photos/seed/home6/900/500'
-  },
-  {
-    address: '74 Lakepoint Dr, Chicago, IL',
-    cityState: 'Chicago, IL',
-    beds: 2,
-    baths: 2,
-    sqft: 1350,
-    price: 430000,
-    lat: 41.8781,
-    lng: -87.6298,
-    image: 'https://picsum.photos/seed/home7/900/500'
-  },
-  {
-    address: '1006 Garden Path, Charlotte, NC',
-    cityState: 'Charlotte, NC',
-    beds: 4,
-    baths: 3,
-    sqft: 2260,
-    price: 540000,
-    lat: 35.2271,
-    lng: -80.8431,
-    image: 'https://picsum.photos/seed/home8/900/500'
-  },
-  {
-    address: '913 Pinecrest St, Portland, OR',
-    cityState: 'Portland, OR',
-    beds: 3,
-    baths: 2,
-    sqft: 1740,
-    price: 610000,
-    lat: 45.5231,
-    lng: -122.6765,
-    image: 'https://picsum.photos/seed/home9/900/500'
-  },
-  {
-    address: '510 Riverbend Ave, Atlanta, GA',
-    cityState: 'Atlanta, GA',
-    beds: 4,
-    baths: 3,
-    sqft: 2420,
-    price: 625000,
-    lat: 33.749,
-    lng: -84.388,
-    image: 'https://picsum.photos/seed/home10/900/500'
-  }
-];
-
 const leaderboardKey = 'zillowguessr_leaderboard';
 const usersKey = 'zillowguessr_users';
 
@@ -147,10 +34,6 @@ function toCurrency(value) {
   }).format(value);
 }
 
-function shuffleArray(items) {
-  return [...items].sort(() => Math.random() - 0.5);
-}
-
 function metersToLatLngOffset(lat, distanceMeters, bearingRadians) {
   const earthRadius = 6378137;
   const deltaLat = (distanceMeters * Math.cos(bearingRadians)) / earthRadius;
@@ -175,54 +58,12 @@ function getRandomizedCircleCenter(homeLat, homeLng) {
   };
 }
 
-function buildRounds() {
-  const rounds = [];
-  while (rounds.length < TOTAL_ROUNDS) {
-    rounds.push(...shuffleArray(listingPool));
-  }
-  return rounds.slice(0, TOTAL_ROUNDS);
-}
-
 function initializeMap() {
   map = L.map('map', { zoomControl: true }).setView([39.5, -98.35], 4);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
-}
-
-function showRound() {
-  const round = gameState.rounds[gameState.roundIndex];
-  const center = getRandomizedCircleCenter(round.lat, round.lng);
-
-  houseImage.src = round.image;
-  houseImage.alt = `Listing at ${round.address}`;
-  listingAddress.textContent = round.address;
-  listingMeta.textContent = `${round.beds} bd • ${round.baths} ba • ${round.sqft.toLocaleString()} sqft • ${round.cityState}`;
-
-  if (mapCircle) {
-    map.removeLayer(mapCircle);
-  }
-  if (revealMarker) {
-    map.removeLayer(revealMarker);
-    revealMarker = null;
-  }
-
-  mapCircle = L.circle([center.lat, center.lng], {
-    radius: MAP_RADIUS_METERS,
-    color: '#2d6cdf',
-    fillColor: '#2d6cdf',
-    fillOpacity: 0.25
-  }).addTo(map);
-
-  map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
-
-  roundLabel.textContent = `Round ${gameState.roundIndex + 1} / ${TOTAL_ROUNDS}`;
-  totalScoreEl.textContent = gameState.totalScore;
-  roundResult.textContent = '';
-  guessForm.reset();
-  guessForm.classList.remove('hidden');
-  nextRoundBtn.classList.add('hidden');
 }
 
 function calculateRoundPoints(guess, actual) {
@@ -271,6 +112,66 @@ function refreshLeaderboard() {
   }
 }
 
+async function fetchRandomListing() {
+  const response = await fetch('/api/listings/random');
+  if (!response.ok) {
+    throw new Error('Unable to fetch listing from API');
+  }
+
+  const payload = await response.json();
+  if (!payload.listing) {
+    throw new Error('No listing payload from API');
+  }
+
+  return payload;
+}
+
+async function showRound() {
+  roundLabel.textContent = `Round ${gameState.roundIndex + 1} / ${TOTAL_ROUNDS}`;
+  roundResult.textContent = 'Loading Zillow listing...';
+  guessForm.classList.add('hidden');
+  nextRoundBtn.classList.add('hidden');
+
+  try {
+    const payload = await fetchRandomListing();
+    const round = payload.listing;
+    gameState.currentRound = round;
+
+    const center = getRandomizedCircleCenter(round.lat, round.lng);
+
+    houseImage.src = round.image;
+    houseImage.alt = `Listing at ${round.address}`;
+    listingAddress.textContent = round.address;
+    listingMeta.innerHTML = `${round.beds} bd • ${round.baths} ba • ${Number(round.sqft).toLocaleString()} sqft • ${round.cityState}<br/><a href="${round.detailUrl}" target="_blank" rel="noreferrer">View Zillow listing</a> · Source: <strong>${payload.source}</strong>`;
+
+    if (mapCircle) {
+      map.removeLayer(mapCircle);
+    }
+    if (revealMarker) {
+      map.removeLayer(revealMarker);
+      revealMarker = null;
+    }
+
+    mapCircle = L.circle([center.lat, center.lng], {
+      radius: MAP_RADIUS_METERS,
+      color: '#2d6cdf',
+      fillColor: '#2d6cdf',
+      fillOpacity: 0.25
+    }).addTo(map);
+
+    map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
+
+    totalScoreEl.textContent = gameState.totalScore;
+    roundResult.innerHTML = payload.warning
+      ? `Loaded fallback listing. API warning: ${payload.warning}`
+      : 'Submit your guess!';
+    guessForm.reset();
+    guessForm.classList.remove('hidden');
+  } catch (error) {
+    roundResult.textContent = `Unable to load listing: ${error.message}`;
+  }
+}
+
 function finishGame() {
   roundResult.innerHTML = `<strong>Game Over!</strong> Final Score: ${gameState.totalScore.toLocaleString()} / 20,000.`;
   guessForm.classList.add('hidden');
@@ -292,7 +193,7 @@ function startGame(username) {
     username,
     totalScore: 0,
     roundIndex: 0,
-    rounds: buildRounds()
+    currentRound: null
   };
 
   welcome.textContent = `Player: ${username}`;
@@ -322,13 +223,16 @@ authForm.addEventListener('submit', (event) => {
 
 guessForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  const guessValue = Number(new FormData(guessForm).get('priceGuess'));
+  if (!gameState?.currentRound) {
+    return;
+  }
 
+  const guessValue = Number(new FormData(guessForm).get('priceGuess'));
   if (!Number.isFinite(guessValue) || guessValue <= 0) {
     return;
   }
 
-  const round = gameState.rounds[gameState.roundIndex];
+  const round = gameState.currentRound;
   const { points, errorPercent } = calculateRoundPoints(guessValue, round.price);
   gameState.totalScore += points;
   totalScoreEl.textContent = gameState.totalScore;
