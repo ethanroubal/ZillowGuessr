@@ -60,7 +60,27 @@ main {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
+}
+
+.mode-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.mode-btn {
+  background: #f2fff6;
+  color: #0f6e3c;
+  border: 1px solid #b7d7be;
+  font-weight: 700;
+}
+
+.mode-btn.active {
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+  color: #f2fff6;
+  border-color: transparent;
 }
 
 .inline-form {
@@ -110,6 +130,12 @@ button.ghost {
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
+  align-items: center;
+}
+
+.game-actions {
+  display: flex;
+  gap: 0.65rem;
   align-items: center;
 }
 
@@ -190,6 +216,18 @@ button.ghost {
 #next-round {
   background: linear-gradient(180deg, var(--gold), var(--gold-dark));
   color: #2a1c01;
+}
+
+@media (max-width: 760px) {
+  .game-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .game-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 @media (min-width: 720px) {

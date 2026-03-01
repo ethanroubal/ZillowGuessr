@@ -1,12 +1,11 @@
 # ZillowGuessr
 
-A GeoGuessr-style home price game with a green money + real-estate visual theme.
+A GeoGuessr-style home game with two playable modes:
 
-- Each round fetches a random listing candidate from the server.
-- The player sees listing images/details and a map circle where the house is inside but not centered.
-- The player guesses the listing price, earning up to **1000 points** if within **1%**.
-- The game runs for **20 rounds** (max **20,000** points).
-- Usernames + leaderboard are stored locally in browser `localStorage`.
+- **Price Mode**: You get a listing + map circle clue and guess the listing price.
+- **Location Mode**: You get listing images + listing price and guess the house location by clicking on the map.
+
+Both modes run for 20 rounds with up to 1,000 points per round.
 
 ## Can this work without paying for an API?
 
@@ -32,15 +31,13 @@ Then open `http://localhost:4173`.
 
 ## Scoring model
 
-- **<= 1% error**: 1000 points (perfect)
-- For larger errors, score follows a quadratic decay based on relative error, giving more intuitive differentiation for near misses while reducing points for broad misses.
-
+- **Price mode**
+  - **<= 1% error**: 1000 points (perfect)
+  - Otherwise: quadratic decay by relative error.
+- **Location mode**
+  - **<= 1 km** away: 1000 points
+  - Decays to 0 points by 250 km distance.
 
 ## Testing and SIGSEGV fix
 
 If browser-based smoke tests crash with a Chromium `SIGSEGV` in this environment, use Firefox for Playwright runs instead of Chromium. This is an environment/runtime issue with headless Chromium, not a game-logic crash.
-
-Example Playwright engine choice:
-
-- ✅ Use `p.firefox.launch()` for smoke screenshots/tests.
-- ⚠️ Avoid `p.chromium.launch()` in this container when it is unstable.
