@@ -1,25 +1,21 @@
 # ZillowGuessr
 
-A GeoGuessr-style home game with two playable modes:
+A GeoGuessr-style home game with two modes:
 
-- **Price Mode**: You get a listing + map circle clue and guess the listing price.
-- **Location Mode**: You get listing images + listing price and guess the house location by clicking on the map.
+- **Price Mode** — guess the listing price from map clue.
+- **Location Mode** — guess the map location from listing photos + shown price.
 
 Both modes run for 20 rounds with up to 1,000 points per round.
 
-## Can this work without paying for an API?
+## Free public Zillow data behavior
 
-Yes. This implementation defaults to a **free mode** that attempts to fetch data from public Zillow listing pages server-side and parse their metadata.
+No paid API is required. The server uses a three-step free pipeline:
 
-- No paid API key is required for this mode.
-- It is more brittle than an official paid API (page markup may change).
-- If parsing fails, the app automatically falls back to local sample listings so gameplay continues.
+1. **Live public fetch** of Zillow listing pages + JSON-LD parsing (`source: public_live`).
+2. If live fetch is blocked, use a **cached public Zillow snapshot set** (`source: public_snapshot`).
+3. Only if needed, use minimal **generic fallback** (`source: fallback`).
 
-You can disable free mode with:
-
-```bash
-export ZILLOW_FREE_MODE=false
-```
+This reduces reliance on generic fallback and keeps gameplay tied to Zillow listing metadata.
 
 ## Run locally
 
@@ -32,12 +28,12 @@ Then open `http://localhost:4173`.
 ## Scoring model
 
 - **Price mode**
-  - **<= 1% error**: 1000 points (perfect)
+  - **<= 1% error**: 1000 points
   - Otherwise: quadratic decay by relative error.
 - **Location mode**
   - **<= 1 km** away: 1000 points
   - Decays to 0 points by 250 km distance.
 
-## Testing and SIGSEGV fix
+## Browser testing note
 
-If browser-based smoke tests crash with a Chromium `SIGSEGV` in this environment, use Firefox for Playwright runs instead of Chromium. This is an environment/runtime issue with headless Chromium, not a game-logic crash.
+If Chromium crashes with SIGSEGV in your environment, use Firefox for Playwright smoke tests.

@@ -24,8 +24,14 @@
         <p>Create a quick profile, then choose your mode.</p>
 
         <div class="mode-picker" id="mode-picker">
-          <button type="button" class="mode-btn active" data-mode="price">🏷️ Price Mode</button>
-          <button type="button" class="mode-btn" data-mode="location">📍 Location Mode</button>
+          <button type="button" class="mode-btn active" data-mode="price">
+            🏷️ Price Mode
+            <span>Guess price from map clue.</span>
+          </button>
+          <button type="button" class="mode-btn" data-mode="location">
+            📍 Location Mode
+            <span>Guess map location from price + photos.</span>
+          </button>
         </div>
 
         <form id="auth-form" class="inline-form">
@@ -48,7 +54,7 @@
               <span>Total Score</span>
               <strong id="total-score">0</strong>
             </div>
-            <button id="switch-mode" type="button" class="ghost">Switch Mode</button>
+            <div class="mode-switcher"><button class="ghost in-game-mode-btn" data-mode="price" type="button">Price</button><button class="ghost in-game-mode-btn" data-mode="location" type="button">Location</button></div>
           </div>
         </div>
 

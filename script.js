@@ -43,7 +43,7 @@ const nextRoundBtn = document.getElementById('next-round');
 const leaderboardList = document.getElementById('leaderboard-list');
 const clearLeaderboardBtn = document.getElementById('clear-leaderboard');
 const modeButtons = document.querySelectorAll('.mode-btn');
-const switchModeBtn = document.getElementById('switch-mode');
+const inGameModeButtons = document.querySelectorAll('.in-game-mode-btn');
 
 function toCurrency(value) {
   return new Intl.NumberFormat('en-US', {
@@ -145,6 +145,9 @@ function calculateLocationPoints(distanceMeters) {
 function setMode(mode) {
   selectedMode = mode;
   for (const button of modeButtons) {
+    button.classList.toggle('active', button.dataset.mode === mode);
+  }
+  for (const button of inGameModeButtons) {
     button.classList.toggle('active', button.dataset.mode === mode);
   }
 }
@@ -408,14 +411,17 @@ guessForm.addEventListener('submit', (event) => {
 
 submitLocationGuessBtn.addEventListener('click', submitLocationGuess);
 
-switchModeBtn.addEventListener('click', () => {
-  if (!gameState) {
-    return;
-  }
-  const newMode = gameState.mode === 'price' ? 'location' : 'price';
-  setMode(newMode);
-  startGame(gameState.username, newMode);
-});
+for (const button of inGameModeButtons) {
+  button.addEventListener('click', () => {
+    const mode = button.dataset.mode;
+    setMode(mode);
+    if (!gameState || gameState.mode === mode) {
+      return;
+    }
+    startGame(gameState.username, mode);
+    roundResult.textContent = `Switched to ${GAME_MODES[mode].name}. New run started.`;
+  });
+}
 
 nextRoundBtn.addEventListener('click', () => {
   gameState.roundIndex += 1;

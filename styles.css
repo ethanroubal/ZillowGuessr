@@ -83,6 +83,14 @@ main {
   border-color: transparent;
 }
 
+.mode-btn span {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-top: 0.2rem;
+}
+
 .inline-form {
   display: grid;
   grid-template-columns: 1fr;
@@ -137,6 +145,17 @@ button.ghost {
   display: flex;
   gap: 0.65rem;
   align-items: center;
+}
+
+.mode-switcher {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.in-game-mode-btn.active {
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+  color: #f2fff6;
+  border-color: transparent;
 }
 
 .score-box {
