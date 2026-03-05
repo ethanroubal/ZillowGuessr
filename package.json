@@ -1,0 +1,11 @@
+{
+  "name": "zillowguessr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GeoGuessr-style Zillow price guessing game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}
